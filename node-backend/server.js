@@ -3,7 +3,7 @@ const Stripe = require('stripe');
 const cors = require('cors');
 
 const app = express();
-const stripe = Stripe('sk_test_51SAddDEk5KmZ05qHKYlGmZTUVtevLsBM1KfSrZCA7tmtWPTtb0Ew68hsNMU2jgUzauIXTqI2n7SFthe4N7HUo8c600Q0CFaSEG'); // Replace with your Stripe secret key
+//const stripe = Stripe('sk_test_51SAddDEk5KmZ05qHKYlGmZTUVtevLsBM1KfSrZCA7tmtWPTtb0Ew68hsNMU2jgUzauIXTqI2n7SFthe4N7HUo8c600Q0CFaSEG'); // Replace with your Stripe secret key
 
 app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());

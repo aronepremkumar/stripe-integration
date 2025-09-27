@@ -7,14 +7,35 @@ function App() {
   const handleCheckout = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/create-checkout-session', {
+      // Use an env-driven backend URL if present
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+      const response = await fetch(`${backendUrl}/create-checkout-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: [{ id: 1, quantity: 1 }] }),
       });
-      const { sessionId } = await response.json();
-      const stripe = window.Stripe('pk_test_51O3X4bKz2o3X4bKz2o3X4bKz2o3X4bKz2o3X4bKz2o3X4b'); // Replace with your Stripe publishable key
-      const { error } = await stripe.redirectToCheckout({ sessionId });
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => 'no body');
+        console.error('Backend returned non-OK status', response.status, text);
+        return;
+      }
+
+      const json = await response.json().catch(() => null);
+      if (!json || !json.sessionId) {
+        console.error('Backend did not return a sessionId:', json);
+        return;
+      }
+
+      // Ensure Stripe.js is loaded
+      if (!window.Stripe) {
+        console.error('Stripe.js not loaded. Make sure <script src="https://js.stripe.com/v3/"></script> is present.');
+        return;
+      }
+
+      const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51SAddDEk5KmZ05qH6M9KZ8AVuXZNWJZ2I7U3JXUEGfQ6moow74ZSRvuGeIvlSGCV9ROnY40TugVgct0GVQhyGEdA007GYYtst9';
+      const stripe = window.Stripe(publishableKey);
+      const { error } = await stripe.redirectToCheckout({ sessionId: json.sessionId });
       if (error) {
         console.error('Stripe redirect error:', error.message);
       }

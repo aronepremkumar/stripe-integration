@@ -49,7 +49,7 @@ function App() {
   };
 
   // Handle checkout
-  const handleCheckout = async (priceId) => {
+  /*const handleCheckout = async (priceId) => {
     if (!email) {
       alert('Please enter your email address');
       return;
@@ -69,6 +69,32 @@ function App() {
       }
     } catch (error) {
       console.error('Checkout error:', error);
+    } finally {
+      setCheckoutLoading(prev => ({ ...prev, [priceId]: false }));
+    }
+  };*/
+
+  // Handle checkout
+  const handleCheckout = async (priceId, interval) => { // Add interval param
+    if (!email) {
+      alert('Please enter your email address');
+      return;
+    }
+    setCheckoutLoading(prev => ({ ...prev, [priceId]: true }));
+    try {
+      const response = await fetch('http://localhost:3000/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId, customerEmail: email, interval }), // Pass interval
+      });
+      const { sessionId } = await response.json();
+      console.log("session id ",sessionId)
+      const stripe = window.Stripe('pk_test_51SAddDEk5KmZ05qH6M9KZ8AVuXZNWJZ2I7U3JXUEGfQ6moow74ZSRvuGeIvlSGCV9ROnY40TugVgct0GVQhyGEdA007GYYtst9'); // Replace with your Stripe publishable key
+      //const stripe = window.Stripe('pk_test_51O3X4bKz2o3X4bKz2o3X4bKz2o3X4bKz2o3X4bKz2o3X4b'); // Replace key
+      const { error } = await stripe.redirectToCheckout({ sessionId });
+      if (error) console.error(error);
+    } catch (error) {
+      console.error(error);
     } finally {
       setCheckoutLoading(prev => ({ ...prev, [priceId]: false }));
     }
@@ -129,13 +155,23 @@ function App() {
               <div className="plan-price">
                 ${product.price.amount} {product.price.currency} / {product.price.interval}
               </div>
-              <button
+              
+              {/* <button
                 onClick={() => handleCheckout(product.price.id)}
                 disabled={checkoutLoading[product.price.id] || !email}
                 className="button"
               >
                 {checkoutLoading[product.price.id] ? 'Processing...' : 'Subscribe Now'}
+              </button> */}
+
+              <button
+                onClick={() => handleCheckout(product.price.id, product.price.interval)}
+                disabled={checkoutLoading[product.price.id] || !email}
+                className="button"
+              >
+                {checkoutLoading[product.price.id] ? 'Processing...' : 'Subscribe Now'}
               </button>
+
             </div>
           ))}
         </div>

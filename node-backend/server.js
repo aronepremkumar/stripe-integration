@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 
 const app = express();
 const stripe = Stripe('sk_test_51SAddDEk5KmZ05qHKYlGmZTUVtevLsBM1KfSrZCA7tmtWPTtb0Ew68hsNMU2jgUzauIXTqI2n7SFthe4N7HUo8c600Q0CFaSEG'); // Replace with your Stripe secret key
-const endpointSecret = 'whsec_your_webhook_secret'; // Replace with your webhook signing secret from Stripe Dashboard
+const endpointSecret = 'whsec_3BtZubWxQgV3OlRZ0KgCNCoCsyPiLB1r'; // Replace with your webhook signing secret from Stripe Dashboard
 
 app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
@@ -20,6 +20,7 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), (req, res) =>
   const sig = req.headers['stripe-signature'];
 
   let event;
+  console.log("event ",event)
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
   } catch (err) {
@@ -94,8 +95,10 @@ app.post('/create-checkout-session', async (req, res) => {
     const customers = await stripe.customers.list({ email: customerEmail, limit: 1 });
     let customer;
     if (customers.data.length > 0) {
+      console.log("customer exist already")
       customer = customers.data[0];
     } else {
+      console.log("customer created on stripe")
       customer = await stripe.customers.create({ email: customerEmail });
     }
 
@@ -108,6 +111,7 @@ app.post('/create-checkout-session', async (req, res) => {
       cancel_url: 'http://localhost:5173/cancel',
       metadata: { interval }, // Pass interval for potential future use
     });
+    console.log("Returning session id ",session.id)
     res.json({ sessionId: session.id });
   } catch (error) {
     console.error('Error creating checkout session:', error);

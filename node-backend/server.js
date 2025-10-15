@@ -37,6 +37,11 @@ app.post('/webhook', bodyParser.raw({ type: 'application/json' }), (req, res) =>
   res.json({ received: true });
 });
 
+//  GLOBAL MIDDLEWARE FOR OTHER ROUTES
+// This *must* come *after* the raw webhook route.
+app.use(express.json()); // or app.use(bodyParser.json());
+// --------------------------------------------------
+
 // Function to handle subscription update
 async function handleCheckoutCompletion(session) {
   try {
@@ -118,6 +123,7 @@ app.post('/create-checkout-session', async (req, res) => {
     res.status(500).json({ error: 'Failed to create checkout session' });
   }
 });
+
 
 // Existing /customer-portal endpoint (unchanged)...
 
